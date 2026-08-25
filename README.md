@@ -12,3 +12,5 @@ Problem Solve/Verificater: PDDL conditions include geometry check - eval_ik, eva
 Sampler: The design of sampler compares sampling method of guided DDPM, DDIM, and rejection sampling. Parameters, sufficient output information for success rate and learning steps are main concerns. IK solver is included in this section, given the solution from diffusion and give out the robot configuration.
 
 When designing the model, three main factors are considered. 1. dataset e.g., whether to use shape or more information during model training. 2. the output e.g., whether a reduced information of the solution affecting the IK rejection rate or not. 3. A different training model such as DDPM or DDIM differs the sampling speed and the quality of samples diversity.
+
+The tasks are finished step by step with one block type only, several types of blocks, with obstacles on the table, training on corresponding training process.
