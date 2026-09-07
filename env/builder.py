@@ -1,4 +1,5 @@
 from tampanda import ArmSceneBuilder
+from tampanda.scenes import BLOCK_SMALL_TEMPLATE, BLOCK_MEDIUM_TEMPLATE, TABLE_TEMPLATE, TABLE_SYMBOLIC_TEMPLATE
 
 def make_builder() -> ArmSceneBuilder:
     
