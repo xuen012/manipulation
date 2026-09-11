@@ -1,3 +1,5 @@
+(../blob/main/overview.png)
+
 # manipulation
 
 replace TAMP kinematics engineering pipeline with trained diffusion model, and use PDDL for verification.
