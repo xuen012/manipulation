@@ -1,4 +1,4 @@
-![framework overview](/overview.png)
+![framework overview](/general_framework.png)
 
 # manipulation
 
