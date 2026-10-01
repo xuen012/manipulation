@@ -172,3 +172,38 @@ def checkpoint_info(config, normalizer, split, kind, sequence_length, model):
         "model_config": dict(model.config) if kind == "hugging" else None,
         "parameter_count": sum(p.numel() for p in model.parameters()),
     }
+
+def save_progress(output_dir, state, history, best):
+    import csv
+    import os
+    import torch
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    torch.save(
+        state,
+        os.path.join(output_dir, "last.pt"),
+    )
+
+    if state["validation_loss"] < best:
+        best = state["validation_loss"]
+
+        torch.save(
+            state,
+            os.path.join(output_dir, "best.pt"),
+        )
+
+    with open(
+        os.path.join(output_dir, "history.csv"),
+        "w",
+        newline="",
+    ) as stream:
+        writer = csv.DictWriter(
+            stream,
+            fieldnames=list(history[0]),
+        )
+
+        writer.writeheader()
+        writer.writerows(history)
+
+    return best
