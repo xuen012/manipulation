@@ -83,3 +83,79 @@ def prepare_data(cand_list, config, sequence_length=4):
         normalizer,
         metadata,
     )
+
+def validation_loss(model, loader, scheduler, device, kind, seed):
+    import torch
+    import torch.nn.functional as F
+    from model.unet1d import hugging_input
+
+    generator = torch.Generator().manual_seed(seed + 10000)
+
+    model.eval()
+    total = 0.0
+    count = 0
+
+    with torch.no_grad():
+        for grasp, block in loader:
+            grasp = grasp.to(device)
+            block = block.to(device)
+
+            noise = torch.randn(
+                grasp.shape,
+                generator=generator,
+            ).to(device)
+
+            noise[..., 1:] = 0
+
+            timesteps = torch.randint(
+                scheduler.config.num_train_timesteps,
+                (len(grasp),),
+                generator=generator,
+            ).to(device)
+
+            noisy = scheduler.add_noise(
+                grasp,
+                noise,
+                timesteps,
+            )
+
+            if kind == "custom":
+                predicted = model(
+                    noisy,
+                    block,
+                    timesteps,
+                )
+            else:
+                predicted = model(
+                    hugging_input(noisy, block, timesteps),
+                    timestep=timesteps,
+                ).sample
+
+            target = (
+                grasp
+                if scheduler.config.prediction_type == "sample"
+                else noise
+            )
+
+            total += (
+                F.mse_loss(
+                    predicted[..., 0],
+                    target[..., 0],
+                ).item()
+                * len(grasp)
+            )
+
+            count += len(grasp)
+
+    model.train()
+
+    import math
+
+    result = total / count
+
+    if not math.isfinite(result):
+        raise RuntimeError(
+            "Non-finite validation loss; inspect the data and learning rate"
+        )
+
+    return result
