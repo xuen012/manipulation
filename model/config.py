@@ -159,3 +159,16 @@ def validation_loss(model, loader, scheduler, device, kind, seed):
         )
 
     return result
+
+def checkpoint_info(config, normalizer, split, kind, sequence_length, model):
+    return {
+        "format_version": 2,
+        "config": config.model_dump(),
+        "normalizer": normalizer,
+        "split": split,
+        "model_kind": kind,
+        "sequence_length": sequence_length,
+        "prediction_type": "sample" if kind == "custom" else "epsilon",
+        "model_config": dict(model.config) if kind == "hugging" else None,
+        "parameter_count": sum(p.numel() for p in model.parameters()),
+    }
