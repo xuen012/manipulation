@@ -1,5 +1,8 @@
 from diffusers import UNet1DModel, DDPMScheduler, DDIMScheduler, DDIMPipeline, DDPMPipeline
 import torch
+from torch import nn
+import torch.nn.functional as F
+from diffusers.models.embeddings import Timesteps
 
 batch_size = 1
 num_total = 32
