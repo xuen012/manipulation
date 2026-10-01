@@ -1,5 +1,6 @@
-from ../env/builder.py import make_builder
+from env.builder import make_builder
 import numpy as np
+from tampanda import GraspPlanner
 from tampanda.symbolic.domains.blocks.blocks_domain import BlocksDomain
 
 def collision_check(x, px, y, py, w, pw, d, pd, clearance):
