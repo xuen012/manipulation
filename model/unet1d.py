@@ -2,7 +2,7 @@ from diffusers import UNet1DModel, DDPMScheduler, DDIMScheduler, DDIMPipeline, D
 import torch
 from torch import nn
 import torch.nn.functional as F
-from diffusers.models.embeddings import Timesteps
+from diffusers.models.embeddings import Timesteps, get_timestep_embedding
 
 batch_size = 1
 num_total = 32
@@ -71,3 +71,14 @@ class unet(nn.Module):
         x = self.last(x)
 
         return x
+
+    
+def hugging_input(noise_grasp, cond, timesteps):
+    cond = cond.clone()
+
+    cond[:, :, 1] = get_timestep_embedding(
+        timesteps,
+        cond.shape[1],
+    ).to(cond.dtype)
+
+    return torch.cat([noise_grasp, cond], dim=1)
