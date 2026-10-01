@@ -43,3 +43,43 @@ def training_options(default_lr=1e-4):
                          output_dir=args.output, print_epoch_loss=1, learning_rate=args.lr,
                          seed=args.seed, max_minutes=args.max_minutes)
     return args, config
+
+def prepare_data(cand_list, config, sequence_length=4):
+    import random
+    import numpy as np
+    import torch
+    from data.processing import train_dataset, fit_normalizer
+
+    random.seed(config.seed)
+    np.random.seed(config.seed)
+    torch.manual_seed(config.seed)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(config.seed)
+
+    if len(cand_list) < 2:
+        raise ValueError("Collect at least two scenes for validation")
+
+    indices = np.random.default_rng(config.seed).permutation(len(cand_list))
+
+    split = max(
+        1,
+        min(len(cand_list) - 1, round(0.15 * len(cand_list))),
+    )
+
+    training = [cand_list[i] for i in indices[split:]]
+    validation = [cand_list[i] for i in indices[:split]]
+
+    normalizer = fit_normalizer(training)
+
+    metadata = {
+        "train_scene_indices": indices[split:].tolist(),
+        "validation_scene_indices": indices[:split].tolist(),
+    }
+
+    return (
+        train_dataset(training, normalizer, sequence_length),
+        train_dataset(validation, normalizer, sequence_length),
+        normalizer,
+        metadata,
+    )
