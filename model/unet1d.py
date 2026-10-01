@@ -32,9 +32,9 @@ class unet(nn.Module):
         super().__init__()
 
         # time encoding
-        self.time_dim = 64
+        self.time_dim = time_dim
         self.time_proj = Timesteps(
-                time_embed_dim, flip_sin_to_cos=True, downscale_freq_shift=0.0
+                time_dim, flip_sin_to_cos=True, downscale_freq_shift=0.0
             )
 
         #unet
