@@ -11,6 +11,9 @@ class train_config(BaseModel):
     num_train_timesteps: int
     output_dir: str = "./"
     print_epoch_loss: int
+    learning_rate: float = Field(default=1e-4, gt=0)
+    seed: int = 42
+    max_minutes: float = Field(default=25, ge=0)
 
 config2 = train_config(train_batch_size=32, num_epochs=2000, lr_warmup_steps=50, save_model_epochs=200, num_train_timesteps=1000, print_epoch_loss=50)
 
