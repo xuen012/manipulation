@@ -66,11 +66,6 @@ class unet(nn.Module):
 
 
 def hugging_input(noise_grasp, cond, timesteps):
-    """Retain the HF network; supply time through a previously padded column.
-
-    The chosen plain DownBlock1D/AttnDownBlock1D blocks do not use temb.
-    Explicit input conditioning makes the existing architecture time-aware.
-    """
     cond = cond.clone()
     cond[:, :, 1] = get_timestep_embedding(timesteps, cond.shape[1]).to(cond.dtype)
     return torch.cat([noise_grasp, cond], dim=1)
