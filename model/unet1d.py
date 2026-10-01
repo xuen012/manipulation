@@ -46,10 +46,21 @@ class unet(nn.Module):
         self.last = nn.Conv1d(64, grasp_dim, 1)
 
     def forward(self, noise_grasp, cond, t):
+        t = torch.as_tensor(t, device=noise_grasp.device).reshape(-1)
+
+        if t.numel() == 1:
+            t = t.expand(noise_grasp.shape[0])
+
         cond_emb = self.cond(cond)
         _, _, length = noise_grasp.shape
+
         t_emb = self.time_proj(t).unsqueeze(-1).repeat(1, 1, length)
-        model_input = torch.cat([torch.tensor(noise_grasp), torch.tensor(cond_emb), torch.tensor(t_emb)], dim=1)
+
+        model_input = torch.cat([
+            noise_grasp,
+            cond_emb,
+            t_emb.to(noise_grasp.dtype),
+        ], dim=1)
         x = self.down(model_input)
         x = F.silu(x)
         attn_in = x.permute(0, 2, 1)
