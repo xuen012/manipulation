@@ -11,6 +11,7 @@ block_dim = 10       # condition
 
 # default model from huggingface
 model = UNet1DModel(
+    sample_size=num_total,
     in_channels=grasp_dim + block_dim,
     out_channels=grasp_dim,
     block_out_channels=(64, 256), 
