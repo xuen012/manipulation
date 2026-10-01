@@ -47,20 +47,12 @@ class unet(nn.Module):
 
     def forward(self, noise_grasp, cond, t):
         t = torch.as_tensor(t, device=noise_grasp.device).reshape(-1)
-
         if t.numel() == 1:
             t = t.expand(noise_grasp.shape[0])
-
         cond_emb = self.cond(cond)
         _, _, length = noise_grasp.shape
-
         t_emb = self.time_proj(t).unsqueeze(-1).repeat(1, 1, length)
-
-        model_input = torch.cat([
-            noise_grasp,
-            cond_emb,
-            t_emb.to(noise_grasp.dtype),
-        ], dim=1)
+        model_input = torch.cat([noise_grasp, cond_emb, t_emb.to(noise_grasp.dtype)], dim=1)
         x = self.down(model_input)
         x = F.silu(x)
         attn_in = x.permute(0, 2, 1)
@@ -72,13 +64,13 @@ class unet(nn.Module):
 
         return x
 
-    
+
 def hugging_input(noise_grasp, cond, timesteps):
+    """Retain the HF network; supply time through a previously padded column.
+
+    The chosen plain DownBlock1D/AttnDownBlock1D blocks do not use temb.
+    Explicit input conditioning makes the existing architecture time-aware.
+    """
     cond = cond.clone()
-
-    cond[:, :, 1] = get_timestep_embedding(
-        timesteps,
-        cond.shape[1],
-    ).to(cond.dtype)
-
+    cond[:, :, 1] = get_timestep_embedding(timesteps, cond.shape[1]).to(cond.dtype)
     return torch.cat([noise_grasp, cond], dim=1)
