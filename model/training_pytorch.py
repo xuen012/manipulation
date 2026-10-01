@@ -9,6 +9,10 @@ from tqdm.auto import tqdm
 from diffusers import UNet1DModel, DDPMScheduler, DDIMScheduler, DDIMPipeline, DDPMPipeline
 import torch
 
+from model.unet1d import unet
+from data.processing import train_dataset2
+from model.config import config2
+
 model = unet(grasp_dim = 17, cond_dim = 10, mid_dim=64, time_dim=64)
 noise_scheduler = DDIMScheduler(num_train_timesteps=config2.num_train_timesteps, prediction_type="sample")
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
