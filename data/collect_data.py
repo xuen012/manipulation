@@ -114,5 +114,17 @@ def collect_data(n):
 
     return obj_list, builder, env, obs_list, obs_idx
 
+def sampling(
+    min_x,
+    max_x,
+    min_y,
+    max_y,
+    margin=.05,
+):
+    return np.random.uniform(
+        [min_x + margin, min_y + margin],
+        [max_x - margin, max_y - margin],
+    )
+
 if __name__ == "__main__":
     print(collect_data())
