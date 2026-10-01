@@ -1,0 +1,12 @@
+# Install the  TAMPanda separately in the same environment.
+numpy>=1.24,<3
+torch>=2.2,<3
+diffusers>=0.30,<0.41
+accelerate>=0.34,<2
+pydantic>=2.6,<3
+mujoco>=3.0,<4
+unified-planning>=1.1,<2
+tqdm>=4.66,<5
+matplotlib>=3.8,<4
+ipython>=8,<10
+tensorboard>=2.16,<3
