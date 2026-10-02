@@ -13,7 +13,13 @@ from model.unet1d import unet
 from data.processing import train_dataset2
 from model.config import config2
 
-model = unet(grasp_dim = 17, cond_dim = 10, mid_dim=64, time_dim=64)
+model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
 noise_scheduler = DDIMScheduler(
     num_train_timesteps=config2.num_train_timesteps,
     prediction_type="sample",
