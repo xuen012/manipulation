@@ -58,7 +58,7 @@ for e in range(config2.num_epochs):
         )
 
         p_cond = 0.1
-        save = (torch.rand(B, 1, 1) > p_cond) # broadcast in torch.where to remove all dims of the conditions.
+        save = (torch.rand(B, 1, 1, device=device) > p_cond) # broadcast in torch.where to remove all dims of the conditions.
         cfg_cond = torch.where(save, block, torch.zeros_like(block))
         noise_predict = model(noise_grasp, cfg_cond, noise_timesteps)
 
