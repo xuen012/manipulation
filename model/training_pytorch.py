@@ -46,6 +46,7 @@ model.train()
 
 for e in range(config2.num_epochs):
     loss_sum = 0
+    seen = 0
     for grasp, block in train_dataloader2:
         grasp = grasp.to(device)
         block = block.to(device)
@@ -84,7 +85,10 @@ for e in range(config2.num_epochs):
         ) * grasp.shape[-1]
         loss.backward()
         optimizer.step()
-        loss_sum += loss.item()
+        loss_sum += loss.item() * B
+        seen += B
+
+    loss_sum /= seen
 
     if (e+1) % config2.print_epoch_loss == 0:
         print("loss of an epoch ",e, ": ", loss_sum)
