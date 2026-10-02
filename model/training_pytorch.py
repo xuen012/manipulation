@@ -52,11 +52,15 @@ for e in range(config2.num_epochs):
         cfg_cond = torch.where(save, block, torch.zeros_like(block))
         noise_predict = model(noise_grasp, cfg_cond, noise_timesteps)
 
-        loss_mask2 = torch.rand(B, 1, 4) # broadcast to keep all grasp information, 4 to keep the first dimension information only. 
-        loss_mask2[...,0] = 1
+        loss_mask2 = torch.zeros(B, 1, 4)
+        loss_mask2[..., 0] = 1
 
         optimizer.zero_grad()
-        loss = F.mse_loss(noise_predict * loss_mask2, noise_grasp * loss_mask2)
+
+        loss = F.mse_loss(
+            noise_predict * loss_mask2,
+            grasp * loss_mask2,
+        ) * grasp.shape[-1]
         loss.backward()
         optimizer.step()
         loss_sum += loss.item()
