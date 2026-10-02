@@ -32,9 +32,20 @@ for e in range(config2.num_epochs):
     for grasp, block in train_dataloader2:
         B = grasp.shape[0]
         
-        noise = torch.zeros_like(grasp)
-        noise_timesteps = torch.randint(0, noise_scheduler.num_train_timesteps, (B,)).long()
-        noise_grasp = noise_scheduler.add_noise(grasp, noise, noise_timesteps)
+        noise = torch.randn_like(grasp)
+        noise[..., 1:] = 0
+
+        noise_timesteps = torch.randint(
+            0,
+            noise_scheduler.config.num_train_timesteps,
+            (B,),
+        ).long()
+
+        noise_grasp = noise_scheduler.add_noise(
+            grasp,
+            noise,
+            noise_timesteps,
+        )
 
         p_cond = 0.1
         save = (torch.rand(B, 1, 1) > p_cond) # broadcast in torch.where to remove all dims of the conditions.
