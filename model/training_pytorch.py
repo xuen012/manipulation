@@ -11,7 +11,7 @@ import torch
 
 from model.unet1d import unet
 from data.processing import train_dataset2
-from model.config import config2
+from model.config import config2, prepare_data
 
 model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
 
@@ -29,8 +29,13 @@ optimizer = torch.optim.AdamW(
     model.parameters(),
     lr=config2.learning_rate,
 )
-train_data2 = train_dataset2(cand_list) 
-train_dataloader2 = DataLoader(train_data2, batch_size=config2.train_batch_size, shuffle=True)
+train_data2, validation_data, normalizer, split = prepare_data(cand_list, config2)
+
+train_dataloader2 = DataLoader(
+    train_data2,
+    batch_size=config2.train_batch_size,
+    shuffle=True,
+)
 model.train()
 
 for e in range(config2.num_epochs):
