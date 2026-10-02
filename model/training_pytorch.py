@@ -48,6 +48,7 @@ for e in range(config2.num_epochs):
             0,
             noise_scheduler.config.num_train_timesteps,
             (B,),
+            device=device,
         ).long()
 
         noise_grasp = noise_scheduler.add_noise(
