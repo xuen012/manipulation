@@ -62,7 +62,7 @@ for e in range(config2.num_epochs):
         cfg_cond = torch.where(save, block, torch.zeros_like(block))
         noise_predict = model(noise_grasp, cfg_cond, noise_timesteps)
 
-        loss_mask2 = torch.zeros(B, 1, 4)
+        loss_mask2 = torch.zeros(B, 1, 4, device=device)
         loss_mask2[..., 0] = 1
 
         optimizer.zero_grad()
