@@ -36,6 +36,12 @@ train_dataloader2 = DataLoader(
     batch_size=config2.train_batch_size,
     shuffle=True,
 )
+
+validation_dataloader = DataLoader(
+    validation_data,
+    batch_size=config2.train_batch_size,
+    shuffle=False,
+)
 model.train()
 
 for e in range(config2.num_epochs):
