@@ -36,6 +36,9 @@ model.train()
 for e in range(config2.num_epochs):
     loss_sum = 0
     for grasp, block in train_dataloader2:
+        grasp = grasp.to(device)
+        block = block.to(device)
+
         B = grasp.shape[0]
         
         noise = torch.randn_like(grasp)
