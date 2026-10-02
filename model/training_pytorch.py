@@ -15,7 +15,10 @@ from model.config import config2
 
 model = unet(grasp_dim = 17, cond_dim = 10, mid_dim=64, time_dim=64)
 noise_scheduler = DDIMScheduler(num_train_timesteps=config2.num_train_timesteps, prediction_type="sample")
-optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+optimizer = torch.optim.AdamW(
+    model.parameters(),
+    lr=config2.learning_rate,
+)
 train_data2 = train_dataset2(cand_list) 
 train_dataloader2 = DataLoader(train_data2, batch_size=config2.train_batch_size, shuffle=True)
 model.train()
