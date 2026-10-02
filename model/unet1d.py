@@ -1,5 +1,8 @@
 from diffusers import UNet1DModel, DDPMScheduler, DDIMScheduler, DDIMPipeline, DDPMPipeline
 import torch
+from torch import nn
+import torch.nn.functional as F
+from diffusers.models.embeddings import Timesteps, get_timestep_embedding
 
 batch_size = 1
 num_total = 32
@@ -8,6 +11,7 @@ block_dim = 10       # condition
 
 # default model from huggingface
 model = UNet1DModel(
+    sample_size=num_total,
     in_channels=grasp_dim + block_dim,
     out_channels=grasp_dim,
     block_out_channels=(64, 256), 
@@ -28,9 +32,9 @@ class unet(nn.Module):
         super().__init__()
 
         # time encoding
-        self.time_dim = 64
+        self.time_dim = time_dim
         self.time_proj = Timesteps(
-                time_embed_dim, flip_sin_to_cos=True, downscale_freq_shift=0.0
+                time_dim, flip_sin_to_cos=True, downscale_freq_shift=0.0
             )
 
         #unet
@@ -42,10 +46,13 @@ class unet(nn.Module):
         self.last = nn.Conv1d(64, grasp_dim, 1)
 
     def forward(self, noise_grasp, cond, t):
+        t = torch.as_tensor(t, device=noise_grasp.device).reshape(-1)
+        if t.numel() == 1:
+            t = t.expand(noise_grasp.shape[0])
         cond_emb = self.cond(cond)
         _, _, length = noise_grasp.shape
         t_emb = self.time_proj(t).unsqueeze(-1).repeat(1, 1, length)
-        model_input = torch.cat([torch.tensor(noise_grasp), torch.tensor(cond_emb), torch.tensor(t_emb)], dim=1)
+        model_input = torch.cat([noise_grasp, cond_emb, t_emb.to(noise_grasp.dtype)], dim=1)
         x = self.down(model_input)
         x = F.silu(x)
         attn_in = x.permute(0, 2, 1)
@@ -56,3 +63,9 @@ class unet(nn.Module):
         x = self.last(x)
 
         return x
+
+
+def hugging_input(noise_grasp, cond, timesteps):
+    cond = cond.clone()
+    cond[:, :, 1] = get_timestep_embedding(timesteps, cond.shape[1]).to(cond.dtype)
+    return torch.cat([noise_grasp, cond], dim=1)
