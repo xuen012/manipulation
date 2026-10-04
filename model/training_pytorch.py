@@ -8,7 +8,7 @@ import os
 from tqdm.auto import tqdm
 from diffusers import UNet1DModel, DDPMScheduler, DDIMScheduler, DDIMPipeline, DDPMPipeline
 import torch
-
+import time 
 from model.unet1d import unet
 from data.processing import train_dataset2
 from model.config import config2, prepare_data, validation_loss, checkpoint_info
@@ -58,6 +58,9 @@ if metadata["parameter_count"] >= 1_000_000:
     )
 
 print("Parameters:", metadata["parameter_count"])
+
+history = []
+started = time.perf_counter()
 
 model.train()
 
@@ -132,6 +135,15 @@ for e in range(config2.num_epochs):
         "custom",
         config2.seed,
     )
+
+    elapsed = time.perf_counter() - started
+
+    history.append({
+        "epoch": e + 1,
+        "train_loss": loss_sum,
+        "validation_loss": val_loss,
+        "elapsed_seconds": elapsed,
+    })
 
     if (e+1) % config2.print_epoch_loss == 0:
         print("loss of an epoch ",e, ": ", loss_sum)
