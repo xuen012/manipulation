@@ -170,10 +170,11 @@ for e in range(config2.num_epochs):
     if (e+1) % config2.print_epoch_loss == 0:
         print("loss of an epoch ",e, ": ", loss_sum)
 
-    if e % config2.save_model_epochs == 0:
-        filename = f"{config2.output_dir}/epoch_{e}.pt"
-        torch.save({'epoch': e, 'model':model.state_dict(), 'optimizer':optimizer.state_dict(), 'loss':loss_sum}, filename)
-        print("model saved.")
+        if e % config2.save_model_epochs == 0:
+            filename = f"{config2.output_dir}/epoch_{e}.pt"
+            torch.save(state, filename)
+            print("model saved.")
+            
     if config2.max_minutes and elapsed >= config2.max_minutes * 60:
         print("Training time budget reached; checkpoints saved.")
         break      
