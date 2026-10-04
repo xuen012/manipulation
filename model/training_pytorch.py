@@ -59,6 +59,8 @@ if metadata["parameter_count"] >= 1_000_000:
 
 print("Parameters:", metadata["parameter_count"])
 
+os.makedirs(config2.output_dir, exist_ok=True)
+
 history = []
 best = float("inf")
 started = time.perf_counter()
