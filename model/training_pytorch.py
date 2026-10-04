@@ -11,7 +11,7 @@ import torch
 import time 
 from model.unet1d import unet
 from data.processing import train_dataset2
-from model.config import config2, prepare_data, validation_loss, checkpoint_info
+from model.config import config2, prepare_data, validation_loss, checkpoint_info, save_progress
 
 model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
 
@@ -60,6 +60,7 @@ if metadata["parameter_count"] >= 1_000_000:
 print("Parameters:", metadata["parameter_count"])
 
 history = []
+best = float("inf")
 started = time.perf_counter()
 
 model.train()
@@ -144,6 +145,22 @@ for e in range(config2.num_epochs):
         "validation_loss": val_loss,
         "elapsed_seconds": elapsed,
     })
+
+    state = {
+        "epoch": e,
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "loss": loss_sum,
+        "validation_loss": val_loss,
+        **metadata,
+    }
+
+    best = save_progress(
+        config2.output_dir,
+        state,
+        history,
+        best,
+    )
 
     if (e+1) % config2.print_epoch_loss == 0:
         print("loss of an epoch ",e, ": ", loss_sum)
