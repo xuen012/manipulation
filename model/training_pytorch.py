@@ -13,6 +13,8 @@ from model.unet1d import unet
 from data.processing import train_dataset2
 from model.config import config2, prepare_data, validation_loss, checkpoint_info, save_progress
 
+torch.manual_seed(config2.seed)
+
 model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -174,7 +176,7 @@ for e in range(config2.num_epochs):
             filename = f"{config2.output_dir}/epoch_{e}.pt"
             torch.save(state, filename)
             print("model saved.")
-            
+
     if config2.max_minutes and elapsed >= config2.max_minutes * 60:
         print("Training time budget reached; checkpoints saved.")
         break      
