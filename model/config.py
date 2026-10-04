@@ -23,6 +23,7 @@ time_proj = Timesteps(
                 time_embed_dim, flip_sin_to_cos=True, downscale_freq_shift=0.0
             )
 
+
 def training_options(default_lr=1e-4):
     import argparse
     parser = argparse.ArgumentParser(description="Run the existing diffusion training loop")
@@ -44,166 +45,74 @@ def training_options(default_lr=1e-4):
                          seed=args.seed, max_minutes=args.max_minutes)
     return args, config
 
+
 def prepare_data(cand_list, config, sequence_length=4):
     import random
     import numpy as np
     import torch
     from data.processing import train_dataset, fit_normalizer
-
     random.seed(config.seed)
     np.random.seed(config.seed)
     torch.manual_seed(config.seed)
-
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(config.seed)
-
     if len(cand_list) < 2:
         raise ValueError("Collect at least two scenes for validation")
-
     indices = np.random.default_rng(config.seed).permutation(len(cand_list))
-
-    split = max(
-        1,
-        min(len(cand_list) - 1, round(0.15 * len(cand_list))),
-    )
-
+    split = max(1, min(len(cand_list) - 1, round(.15 * len(cand_list))))
     training = [cand_list[i] for i in indices[split:]]
     validation = [cand_list[i] for i in indices[:split]]
-
     normalizer = fit_normalizer(training)
+    metadata = {"train_scene_indices": indices[split:].tolist(), "validation_scene_indices": indices[:split].tolist()}
+    return (train_dataset(training, normalizer, sequence_length),
+            train_dataset(validation, normalizer, sequence_length), normalizer, metadata)
 
-    metadata = {
-        "train_scene_indices": indices[split:].tolist(),
-        "validation_scene_indices": indices[:split].tolist(),
-    }
-
-    return (
-        train_dataset(training, normalizer, sequence_length),
-        train_dataset(validation, normalizer, sequence_length),
-        normalizer,
-        metadata,
-    )
 
 def validation_loss(model, loader, scheduler, device, kind, seed):
     import torch
     import torch.nn.functional as F
     from model.unet1d import hugging_input
-
     generator = torch.Generator().manual_seed(seed + 10000)
-
     model.eval()
-    total = 0.0
-    count = 0
-
+    total, count = 0., 0
     with torch.no_grad():
         for grasp, block in loader:
-            grasp = grasp.to(device)
-            block = block.to(device)
-
-            noise = torch.randn(
-                grasp.shape,
-                generator=generator,
-            ).to(device)
-
+            grasp, block = grasp.to(device), block.to(device)
+            noise = torch.randn(grasp.shape, generator=generator).to(device)
             noise[..., 1:] = 0
-
-            timesteps = torch.randint(
-                scheduler.config.num_train_timesteps,
-                (len(grasp),),
-                generator=generator,
-            ).to(device)
-
-            noisy = scheduler.add_noise(
-                grasp,
-                noise,
-                timesteps,
-            )
-
-            if kind == "custom":
-                predicted = model(
-                    noisy,
-                    block,
-                    timesteps,
-                )
-            else:
-                predicted = model(
-                    hugging_input(noisy, block, timesteps),
-                    timestep=timesteps,
-                ).sample
-
-            target = (
-                grasp
-                if scheduler.config.prediction_type == "sample"
-                else noise
-            )
-
-            total += (
-                F.mse_loss(
-                    predicted[..., 0],
-                    target[..., 0],
-                ).item()
-                * len(grasp)
-            )
-
+            timesteps = torch.randint(scheduler.config.num_train_timesteps, (len(grasp),), generator=generator).to(device)
+            noisy = scheduler.add_noise(grasp, noise, timesteps)
+            predicted = model(noisy, block, timesteps) if kind == "custom" else model(hugging_input(noisy, block, timesteps), timestep=timesteps).sample
+            target = grasp if scheduler.config.prediction_type == "sample" else noise
+            total += F.mse_loss(predicted[..., 0], target[..., 0]).item() * len(grasp)
             count += len(grasp)
-
     model.train()
-
     import math
-
     result = total / count
-
     if not math.isfinite(result):
-        raise RuntimeError(
-            "Non-finite validation loss; inspect the data and learning rate"
-        )
-
+        raise RuntimeError("Non-finite validation loss; inspect the data and learning rate")
     return result
 
+
 def checkpoint_info(config, normalizer, split, kind, sequence_length, model):
-    return {
-        "format_version": 2,
-        "config": config.model_dump(),
-        "normalizer": normalizer,
-        "split": split,
-        "model_kind": kind,
-        "sequence_length": sequence_length,
-        "prediction_type": "sample" if kind == "custom" else "epsilon",
-        "model_config": dict(model.config) if kind == "hugging" else None,
-        "parameter_count": sum(p.numel() for p in model.parameters()),
-    }
+    return {"format_version": 2, "config": config.model_dump(), "normalizer": normalizer,
+            "split": split, "model_kind": kind, "sequence_length": sequence_length,
+            "prediction_type": "sample" if kind == "custom" else "epsilon",
+            "model_config": dict(model.config) if kind == "hugging" else None,
+            "parameter_count": sum(p.numel() for p in model.parameters())}
+
 
 def save_progress(output_dir, state, history, best):
     import csv
     import os
     import torch
-
     os.makedirs(output_dir, exist_ok=True)
-
-    torch.save(
-        state,
-        os.path.join(output_dir, "last.pt"),
-    )
-
+    torch.save(state, os.path.join(output_dir, "last.pt"))
     if state["validation_loss"] < best:
         best = state["validation_loss"]
-
-        torch.save(
-            state,
-            os.path.join(output_dir, "best.pt"),
-        )
-
-    with open(
-        os.path.join(output_dir, "history.csv"),
-        "w",
-        newline="",
-    ) as stream:
-        writer = csv.DictWriter(
-            stream,
-            fieldnames=list(history[0]),
-        )
-
+        torch.save(state, os.path.join(output_dir, "best.pt"))
+    with open(os.path.join(output_dir, "history.csv"), "w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(history[0]))
         writer.writeheader()
         writer.writerows(history)
-
     return best

@@ -51,6 +51,27 @@ metadata = checkpoint_info(
     4,
     model,
 )
+
+if metadata["parameter_count"] >= 1_000_000:
+    raise ValueError(
+        "The primary Project 2 model must be smaller than one million parameters"
+    )
+
+print("Parameters:", metadata["parameter_count"])metadata = checkpoint_info(
+    config2,
+    normalizer,
+    split,
+    "custom",
+    4,
+    model,
+)
+
+if metadata["parameter_count"] >= 1_000_000:
+    raise ValueError(
+        "The primary Project 2 model must be smaller than one million parameters"
+    )
+
+print("Parameters:", metadata["parameter_count"])
 model.train()
 
 for e in range(config2.num_epochs):

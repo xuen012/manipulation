@@ -1,1 +1,1 @@
-"""Project 2 diffusion grasp sampling."""
+"""Data collection and the original grasp preprocessing."""
