@@ -11,7 +11,7 @@ import torch
 
 from model.unet1d import unet
 from data.processing import train_dataset2
-from model.config import config2, prepare_data, validation_loss
+from model.config import config2, prepare_data, validation_loss, checkpoint_info
 
 model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
 
@@ -41,6 +41,15 @@ validation_dataloader = DataLoader(
     validation_data,
     batch_size=config2.train_batch_size,
     shuffle=False,
+)
+
+metadata = checkpoint_info(
+    config2,
+    normalizer,
+    split,
+    "custom",
+    4,
+    model,
 )
 model.train()
 
