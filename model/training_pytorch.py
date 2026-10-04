@@ -83,7 +83,24 @@ for e in range(config2.num_epochs):
             noise_predict * loss_mask2,
             grasp * loss_mask2,
         ) * grasp.shape[-1]
+
+        if not torch.isfinite(loss):
+            raise RuntimeError("Non-finite training loss")
+
         loss.backward()
+        clip_grad_norm_(model.parameters(), 1.0)
+        optimizer.step()        optimizer.zero_grad()
+
+        loss = F.mse_loss(
+            noise_predict * loss_mask2,
+            grasp * loss_mask2,
+        ) * grasp.shape[-1]
+
+        if not torch.isfinite(loss):
+            raise RuntimeError("Non-finite training loss")
+
+        loss.backward()
+        clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
         loss_sum += loss.item() * B
         seen += B
