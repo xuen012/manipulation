@@ -126,6 +126,9 @@ for e in range(config2.num_epochs):
         loss_sum += loss.item() * B
         seen += B
 
+        if config2.max_minutes and time.perf_counter() - started >= config2.max_minutes * 60:
+            break
+
     loss_sum /= seen
 
     val_loss = validation_loss(
@@ -169,3 +172,6 @@ for e in range(config2.num_epochs):
         filename = f"{config2.output_dir}/epoch_{e}.pt"
         torch.save({'epoch': e, 'model':model.state_dict(), 'optimizer':optimizer.state_dict(), 'loss':loss_sum}, filename)
         print("model saved.")
+    if config2.max_minutes and elapsed >= config2.max_minutes * 60:
+        print("Training time budget reached; checkpoints saved.")
+        break      
