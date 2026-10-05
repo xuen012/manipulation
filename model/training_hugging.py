@@ -271,3 +271,12 @@ def train(cand_list, config, device="auto"):
                 noise_scheduler.save_pretrained(
                     os.path.join(config.output_dir, "scheduler")
                 )
+
+        if (
+            config.max_minutes
+            and elapsed >= config.max_minutes * 60
+        ):
+            print(
+                "Training time budget reached; checkpoints saved."
+            )
+            break
