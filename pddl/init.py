@@ -4,7 +4,7 @@ from model.unet1d import unet
 
 def initialize(
     checkpoint_path,
-    test_block_info,
+    test_block_info=None,
     method="ddim",
     steps=50,
     guidance_scale=3.0,
@@ -81,6 +81,20 @@ def initialize(
     mid_dim = 64
     time_dim = 64
     test_batch_size = 1
+
+    if test_block_info is None:
+        test_block_info = torch.zeros(
+            cond_dim,
+            num_total,
+        )
+
+    if tuple(test_block_info.shape) != (
+        cond_dim,
+        num_total,
+    ):
+        raise ValueError(
+            f"This checkpoint needs condition shape ({cond_dim}, {num_total})"
+        )
 
     test_block_cnn = test_block_info.unsqueeze(0)
     uncond_block_cnn = torch.zeros_like(test_block_cnn)
