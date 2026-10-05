@@ -219,6 +219,19 @@ def train(cand_list, config, device="auto"):
             ):
                 break
 
+        progress_bar.close()
+
+        unwrapped = accelerator.unwrap_model(model)
+
+        val_loss = validation_loss(
+            unwrapped,
+            validation_loader,
+            noise_scheduler,
+            accelerator.device,
+            "hugging",
+            config.seed,
+        )
+
         if accelerator.is_main_process:
             pipeline = DDIMPipeline(
                 unet=accelerator.unwrap_model(model),
