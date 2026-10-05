@@ -118,10 +118,20 @@ def train(cand_list, config, device="auto"):
         progress_bar.set_description(f"Epoch {n}")
 
         for grasp, block in train_dataloader:
+            batch_size = grasp.shape[0]
 
             # conditional guidance
             p_drop = 0.1
-            mask = torch.rand(batch_size, 1, 1) < p_drop
+            mask = (
+                torch.rand(
+                    batch_size,
+                    1,
+                    1,
+                    device=grasp.device,
+                )
+                < p_drop
+            )
+
             ctx_block = torch.where(
                 mask,
                 torch.zeros_like(block),
