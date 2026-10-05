@@ -102,6 +102,10 @@ def train(cand_list, config, device="auto"):
         "(optional original architecture)",
     )
 
+    history = []
+    best = float("inf")
+    started = time.perf_counter()
+
     model.train()
     global_step = 0
 
