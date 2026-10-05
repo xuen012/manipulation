@@ -70,7 +70,8 @@ def initialize(
     # test parameters
     # guidance_scale is a caller option; the original default remains 3.0.
     noise_scheduler.set_timesteps(
-        num_inference_steps=steps
+        num_inference_steps=steps,
+        device=device,
     )
 
     num_total = 4
