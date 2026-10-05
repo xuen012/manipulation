@@ -21,9 +21,9 @@ def initialize(checkpoint_path, test_block_info):
 
     noise_scheduler = DDIMScheduler(
         num_train_timesteps=train_steps,
-        prediction_type="sample",
+        prediction_type=checkpoint["prediction_type"],
+        clip_sample=False,
     )
-
     loaded_model = unet(
         grasp_dim=17,
         cond_dim=10,
