@@ -232,6 +232,31 @@ def train(cand_list, config, device="auto"):
             config.seed,
         )
 
+        elapsed = time.perf_counter() - started
+
+        history.append({
+            "epoch": n + 1,
+            "train_loss": loss_sum / seen,
+            "validation_loss": val_loss,
+            "elapsed_seconds": elapsed,
+        })
+
+        state = {
+            "epoch": n,
+            "model": unwrapped.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "loss": loss_sum / seen,
+            "validation_loss": val_loss,
+            **metadata,
+        }
+
+        best = save_progress(
+            config.output_dir,
+            state,
+            history,
+            best,
+        )
+
         if accelerator.is_main_process:
             pipeline = DDIMPipeline(
                 unet=accelerator.unwrap_model(model),
