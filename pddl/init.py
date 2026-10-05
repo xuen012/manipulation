@@ -23,6 +23,11 @@ def initialize(checkpoint_path, test_block_info):
         weights_only=True,
     )
 
+    if checkpoint.get("format_version") != 2:
+        raise ValueError(
+            "Retrain using these scripts: this checkpoint needs normalization and model metadata"
+        )
+
     loaded_model.load_state_dict(checkpoint["model"])
     loaded_model.eval()
 
