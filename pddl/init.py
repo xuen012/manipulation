@@ -5,17 +5,6 @@ from model.unet1d import unet
 def initialize(checkpoint_path, test_block_info):
     # load model architecture
     time_embed_dim = 64
-    noise_scheduler = DDIMScheduler(
-        num_train_timesteps=1000,
-        prediction_type="sample",
-    )
-
-    loaded_model = unet(
-        grasp_dim=17,
-        cond_dim=10,
-        mid_dim=64,
-        time_dim=64,
-    )
 
     checkpoint = torch.load(
         checkpoint_path,
@@ -27,6 +16,20 @@ def initialize(checkpoint_path, test_block_info):
         raise ValueError(
             "Retrain using these scripts: this checkpoint needs normalization and model metadata"
         )
+
+    train_steps = checkpoint["config"]["num_train_timesteps"]
+
+    noise_scheduler = DDIMScheduler(
+        num_train_timesteps=train_steps,
+        prediction_type="sample",
+    )
+
+    loaded_model = unet(
+        grasp_dim=17,
+        cond_dim=10,
+        mid_dim=64,
+        time_dim=64,
+    )
 
     loaded_model.load_state_dict(checkpoint["model"])
     loaded_model.eval()
