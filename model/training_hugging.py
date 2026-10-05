@@ -87,6 +87,21 @@ def train(cand_list, config, device="auto"):
         lr_scheduler,
     )
 
+    metadata = checkpoint_info(
+        config,
+        normalizer,
+        split,
+        "hugging",
+        32,
+        accelerator.unwrap_model(model),
+    )
+
+    print(
+        "HF model parameters:",
+        metadata["parameter_count"],
+        "(optional original architecture)",
+    )
+
     model.train()
     global_step = 0
 
