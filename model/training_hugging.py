@@ -21,69 +21,150 @@ from model.config import (
 )
 import time
 
-optimizer = optim.AdamW(model.parameters(), lr=0.003)
-train_data = train_dataset(cand_list) 
-train_dataloader = DataLoader(train_data, batch_size=config.train_batch_size, shuffle=True)
-lr_scheduler = get_cosine_schedule_with_warmup(
-    optimizer=optimizer,
-    num_warmup_steps=config.lr_warmup_steps,
-    num_training_steps=(len(train_dataloader) * config.num_epochs),
-)
 
-accelerator = Accelerator(
+def train(cand_list, config, device="auto"):
+    torch.manual_seed(config.seed)
+
+    model = UNet1DModel.from_config(hugging_model.config)
+
+    noise_scheduler = DDPMScheduler(
+        num_train_timesteps=config.num_train_timesteps,
+        prediction_type="epsilon",
+        clip_sample=False,
+    )
+
+    optimizer = optim.AdamW(
+        model.parameters(),
+        lr=config.learning_rate,
+    )
+
+    train_data = train_dataset(cand_list)
+
+    train_dataloader = DataLoader(
+        train_data,
+        batch_size=config.train_batch_size,
+        shuffle=True,
+    )
+
+    lr_scheduler = get_cosine_schedule_with_warmup(
+        optimizer=optimizer,
+        num_warmup_steps=config.lr_warmup_steps,
+        num_training_steps=len(train_dataloader) * config.num_epochs,
+    )
+
+    accelerator = Accelerator(
         log_with="tensorboard",
         project_dir=os.path.join(config.output_dir, "logs"),
     )
-if accelerator.is_main_process:
-    if config.output_dir is not None:
-        os.makedirs(config.output_dir, exist_ok=True)
-    accelerator.init_trackers("train_example")
-
-model, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
-        model, optimizer, train_dataloader, lr_scheduler
-    )
-
-model.train()
-global_step = 0
-
-for n in range(config.num_epochs):
-    progress_bar = tqdm(total=len(train_dataloader), disable=not accelerator.is_local_main_process)
-    progress_bar.set_description(f"Epoch {n}")
-
-    for grasp, block in train_dataloader:
-
-    # conditional guidance
-        p_drop = 0.1
-        mask = (torch.rand(batch_size, 1, 1) < p_drop)
-        ctx_block = torch.where(mask, torch.zeros_like(block), block)
-
-    # noise learning
-        noise = torch.zeros_like(grasp)
-        timesteps = torch.randint(0, noise_scheduler.config.num_train_timesteps, (batch_size,)).long()
-        noise_grasp = noise_scheduler.add_noise(grasp, noise, timesteps)
-
-        with accelerator.accumulate(model):
-            predicted_noise = model(torch.cat([noise_grasp, ctx_block], dim=1), timestep = timesteps).sample
-            loss_mask = torch.zeros_like(grasp).to(grasp.device)
-            loss_mask[..., 0] = 1.0
-            loss = F.mse_loss(predicted_noise * loss_mask, noise * loss_mask)
-            accelerator.backward(loss)
-
-            if accelerator.sync_gradients:
-                accelerator.clip_grad_norm_(model.parameters(), 1.0)
-
-            optimizer.step()
-            lr_scheduler.step()
-            optimizer.zero_grad()
-
-        progress_bar.update(1)
-        logs = {"loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0], "step": global_step}
-        progress_bar.set_postfix(**logs)
-        accelerator.log(logs, step=global_step)
-        global_step += 1
 
     if accelerator.is_main_process:
-        pipeline = DDIMPipeline(unet=accelerator.unwrap_model(model), scheduler=noise_scheduler)
+        if config.output_dir is not None:
+            os.makedirs(config.output_dir, exist_ok=True)
 
-        if (n + 1) % config.save_model_epochs == 0 or n == config.num_epochs - 1:
-            pipeline.save_pretrained(config.output_dir)
+        accelerator.init_trackers("train_example")
+
+    model, optimizer, train_dataloader, lr_scheduler = accelerator.prepare(
+        model,
+        optimizer,
+        train_dataloader,
+        lr_scheduler,
+    )
+
+    model.train()
+    global_step = 0
+
+    for n in range(config.num_epochs):
+        progress_bar = tqdm(
+            total=len(train_dataloader),
+            disable=not accelerator.is_local_main_process,
+        )
+
+        progress_bar.set_description(f"Epoch {n}")
+
+        for grasp, block in train_dataloader:
+
+            # conditional guidance
+            p_drop = 0.1
+            mask = torch.rand(batch_size, 1, 1) < p_drop
+            ctx_block = torch.where(
+                mask,
+                torch.zeros_like(block),
+                block,
+            )
+
+            # noise learning
+            noise = torch.zeros_like(grasp)
+
+            timesteps = torch.randint(
+                0,
+                noise_scheduler.config.num_train_timesteps,
+                (batch_size,),
+            ).long()
+
+            noise_grasp = noise_scheduler.add_noise(
+                grasp,
+                noise,
+                timesteps,
+            )
+
+            with accelerator.accumulate(model):
+                predicted_noise = model(
+                    torch.cat(
+                        [noise_grasp, ctx_block],
+                        dim=1,
+                    ),
+                    timestep=timesteps,
+                ).sample
+
+                loss_mask = torch.zeros_like(grasp).to(
+                    grasp.device
+                )
+
+                loss_mask[..., 0] = 1.0
+
+                loss = F.mse_loss(
+                    predicted_noise * loss_mask,
+                    noise * loss_mask,
+                )
+
+                accelerator.backward(loss)
+
+                if accelerator.sync_gradients:
+                    accelerator.clip_grad_norm_(
+                        model.parameters(),
+                        1.0,
+                    )
+
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
+
+            progress_bar.update(1)
+
+            logs = {
+                "loss": loss.detach().item(),
+                "lr": lr_scheduler.get_last_lr()[0],
+                "step": global_step,
+            }
+
+            progress_bar.set_postfix(**logs)
+            accelerator.log(
+                logs,
+                step=global_step,
+            )
+
+            global_step += 1
+
+        if accelerator.is_main_process:
+            pipeline = DDIMPipeline(
+                unet=accelerator.unwrap_model(model),
+                scheduler=noise_scheduler,
+            )
+
+            if (
+                (n + 1) % config.save_model_epochs == 0
+                or n == config.num_epochs - 1
+            ):
+                pipeline.save_pretrained(
+                    config.output_dir
+                )
