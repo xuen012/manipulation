@@ -38,13 +38,18 @@ def train(cand_list, config, device="auto"):
         lr=config.learning_rate,
     )
 
-    train_data = train_dataset(cand_list)
+    train_data, validation_data, normalizer, split = prepare_data(
+        cand_list,
+        config,
+        sequence_length=32,
+    )
 
     train_dataloader = DataLoader(
         train_data,
         batch_size=config.train_batch_size,
         shuffle=True,
     )
+
 
     lr_scheduler = get_cosine_schedule_with_warmup(
         optimizer=optimizer,
