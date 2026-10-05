@@ -13,61 +13,69 @@ from model.unet1d import unet
 from data.processing import train_dataset2
 from model.config import config2, prepare_data, validation_loss, checkpoint_info, save_progress
 
-torch.manual_seed(config2.seed)
+def train(cand_list, config2=config2, device="auto"):
+    torch.manual_seed(config2.seed)
 
-model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
+    model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = model.to(device)
+    if device == "auto":
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    else:
+        device = torch.device(device)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = model.to(device)
-noise_scheduler = DDIMScheduler(
-    num_train_timesteps=config2.num_train_timesteps,
-    prediction_type="sample",
-    clip_sample=False,
-)
-optimizer = torch.optim.AdamW(
-    model.parameters(),
-    lr=config2.learning_rate,
-)
-train_data2, validation_data, normalizer, split = prepare_data(cand_list, config2)
+    model = model.to(device)
 
-train_dataloader2 = DataLoader(
-    train_data2,
-    batch_size=config2.train_batch_size,
-    shuffle=True,
-)
-
-validation_dataloader = DataLoader(
-    validation_data,
-    batch_size=config2.train_batch_size,
-    shuffle=False,
-)
-
-metadata = checkpoint_info(
-    config2,
-    normalizer,
-    split,
-    "custom",
-    4,
-    model,
-)
-
-if metadata["parameter_count"] >= 1_000_000:
-    raise ValueError(
-        "The primary Project 2 model must be smaller than one million parameters"
+    noise_scheduler = DDIMScheduler(
+        num_train_timesteps=config2.num_train_timesteps,
+        prediction_type="sample",
+        clip_sample=False,
     )
 
-print("Parameters:", metadata["parameter_count"])
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=config2.learning_rate,
+    )
 
-os.makedirs(config2.output_dir, exist_ok=True)
+    train_data2, validation_data, normalizer, split = prepare_data(
+        cand_list,
+        config2,
+    )
 
-history = []
-best = float("inf")
-started = time.perf_counter()
+    train_dataloader2 = DataLoader(
+        train_data2,
+        batch_size=config2.train_batch_size,
+        shuffle=True,
+    )
 
-model.train()
+    validation_dataloader = DataLoader(
+        validation_data,
+        batch_size=config2.train_batch_size,
+        shuffle=False,
+    )
+
+    metadata = checkpoint_info(
+        config2,
+        normalizer,
+        split,
+        "custom",
+        4,
+        model,
+    )
+
+    if metadata["parameter_count"] >= 1_000_000:
+        raise ValueError(
+            "The primary Project 2 model must be smaller than one million parameters"
+        )
+
+    print("Parameters:", metadata["parameter_count"])
+
+    os.makedirs(config2.output_dir, exist_ok=True)
+
+    history = []
+    best = float("inf")
+    started = time.perf_counter()
+
+    model.train()
 
 for e in range(config2.num_epochs):
     loss_sum = 0
