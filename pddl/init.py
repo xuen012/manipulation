@@ -96,7 +96,7 @@ def initialize(
             f"This checkpoint needs condition shape ({cond_dim}, {num_total})"
         )
 
-    test_block_cnn = test_block_info.unsqueeze(0)
+    test_block_cnn = test_block_info.unsqueeze(0).to(device)
     uncond_block_cnn = torch.zeros_like(test_block_cnn)
 
     generated_grasp_cnn = torch.randn(
