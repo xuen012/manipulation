@@ -19,7 +19,8 @@ def initialize(checkpoint_path, test_block_info):
 
     checkpoint = torch.load(
         checkpoint_path,
-        weights_only=False,
+        map_location="cpu",
+        weights_only=True,
     )
 
     loaded_model.load_state_dict(checkpoint["model"])
