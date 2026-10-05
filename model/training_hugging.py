@@ -165,16 +165,18 @@ def train(cand_list, config, device="auto"):
                     timestep=timesteps,
                 ).sample
 
-                loss_mask = torch.zeros_like(grasp).to(
-                    grasp.device
-                )
-
+                loss_mask = torch.zeros_like(grasp)
                 loss_mask[..., 0] = 1.0
 
                 loss = F.mse_loss(
                     predicted_noise * loss_mask,
                     noise * loss_mask,
-                )
+                ) * grasp.shape[-1]
+
+                if not torch.isfinite(loss):
+                    raise RuntimeError(
+                        "Non-finite training loss"
+                    )
 
                 accelerator.backward(loss)
 
