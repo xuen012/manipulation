@@ -24,8 +24,10 @@ def initialize(
 
     train_steps = checkpoint["config"]["num_train_timesteps"]
 
-    if method not in ("ddim", "ddpm"):
-        raise ValueError("method must be 'ddim' or 'ddpm'")
+    if not 1 <= steps <= train_steps or method not in ("ddpm", "ddim"):
+        raise ValueError(
+            f"Choose ddpm/ddim and 1 <= steps <= {train_steps}"
+        )
 
     scheduler_class = (
         DDIMScheduler
