@@ -283,3 +283,12 @@ def train(cand_list, config, device="auto"):
 
     accelerator.end_training()
     return accelerator.unwrap_model(model)
+
+if __name__ == "__main__":
+    args, config = training_options()
+
+    train(
+        load_data(args.data),
+        config,
+        args.device,
+    )
