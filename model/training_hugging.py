@@ -69,6 +69,11 @@ def train(cand_list, config, device="auto"):
         project_dir=os.path.join(config.output_dir, "logs"),
     )
 
+    if accelerator.num_processes != 1:
+        raise ValueError(
+            "Use one Accelerate process for this project trainer"
+        )
+
     if accelerator.is_main_process:
         if config.output_dir is not None:
             os.makedirs(config.output_dir, exist_ok=True)
