@@ -2,6 +2,7 @@ import io
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import display, Image
+from IPython.display import display, Image
 
 def render_view(env, lookat=(0.45, 0.0, 0.30), distance=1.4,
                 azimuth=135.0, elevation=-25.0, width=640, height=480):
