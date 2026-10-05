@@ -2,7 +2,12 @@ import torch
 from diffusers import DDIMScheduler, DDPMScheduler, UNet1DModel
 from model.unet1d import unet
 
-def initialize(checkpoint_path, test_block_info):
+def initialize(
+    checkpoint_path,
+    test_block_info,
+    method="ddim",
+    steps=50,
+):
     # load model architecture
     time_embed_dim = 64
 
@@ -19,7 +24,16 @@ def initialize(checkpoint_path, test_block_info):
 
     train_steps = checkpoint["config"]["num_train_timesteps"]
 
-    noise_scheduler = DDIMScheduler(
+    if method not in ("ddim", "ddpm"):
+        raise ValueError("method must be 'ddim' or 'ddpm'")
+
+    scheduler_class = (
+        DDIMScheduler
+        if method == "ddim"
+        else DDPMScheduler
+    )
+
+    noise_scheduler = scheduler_class(
         num_train_timesteps=train_steps,
         prediction_type=checkpoint["prediction_type"],
         clip_sample=False,
@@ -36,7 +50,9 @@ def initialize(checkpoint_path, test_block_info):
 
     # test parameters
     guidance_scale = 3.0
-    noise_scheduler.set_timesteps(num_inference_steps=1000)
+    noise_scheduler.set_timesteps(
+        num_inference_steps=steps
+    )
 
     num_total = 4
     grasp_dim = 17
