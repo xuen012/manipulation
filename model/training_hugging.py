@@ -258,15 +258,16 @@ def train(cand_list, config, device="auto"):
         )
 
         if accelerator.is_main_process:
-            pipeline = DDIMPipeline(
-                unet=accelerator.unwrap_model(model),
-                scheduler=noise_scheduler,
-            )
+            pipeline = accelerator.unwrap_model(model)
 
             if (
                 (n + 1) % config.save_model_epochs == 0
                 or n == config.num_epochs - 1
             ):
                 pipeline.save_pretrained(
-                    config.output_dir
+                    os.path.join(config.output_dir, "unet")
+                )
+
+                noise_scheduler.save_pretrained(
+                    os.path.join(config.output_dir, "scheduler")
                 )
