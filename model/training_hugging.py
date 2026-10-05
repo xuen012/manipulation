@@ -117,6 +117,9 @@ def train(cand_list, config, device="auto"):
 
         progress_bar.set_description(f"Epoch {n}")
 
+        loss_sum = 0.0
+        seen = 0
+
         for grasp, block in train_dataloader:
             batch_size = grasp.shape[0]
 
@@ -205,6 +208,9 @@ def train(cand_list, config, device="auto"):
             )
 
             global_step += 1
+
+            loss_sum += loss.item() * batch_size
+            seen += batch_size
 
         if accelerator.is_main_process:
             pipeline = DDIMPipeline(
