@@ -280,3 +280,6 @@ def train(cand_list, config, device="auto"):
                 "Training time budget reached; checkpoints saved."
             )
             break
+
+    accelerator.end_training()
+    return accelerator.unwrap_model(model)
