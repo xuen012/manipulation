@@ -103,8 +103,10 @@ def initialize(
         test_batch_size,
         grasp_dim,
         num_total,
+        device=device,
     )
 
+    generated_grasp_cnn[..., 1:] = 0
     return (
         loaded_model,
         noise_scheduler,
