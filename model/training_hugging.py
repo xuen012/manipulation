@@ -157,9 +157,10 @@ def train(cand_list, config, device="auto"):
 
             with accelerator.accumulate(model):
                 predicted_noise = model(
-                    torch.cat(
-                        [noise_grasp, ctx_block],
-                        dim=1,
+                    hugging_input(
+                        noise_grasp,
+                        ctx_block,
+                        timesteps,
                     ),
                     timestep=timesteps,
                 ).sample
