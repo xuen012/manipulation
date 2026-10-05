@@ -64,6 +64,7 @@ def train(cand_list, config, device="auto"):
     )
 
     accelerator = Accelerator(
+        cpu=(device == "cpu"),
         log_with="tensorboard",
         project_dir=os.path.join(config.output_dir, "logs"),
     )
