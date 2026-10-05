@@ -139,12 +139,14 @@ def train(cand_list, config, device="auto"):
             )
 
             # noise learning
-            noise = torch.zeros_like(grasp)
+            noise = torch.randn_like(grasp)
+            noise[..., 1:] = 0
 
             timesteps = torch.randint(
                 0,
                 noise_scheduler.config.num_train_timesteps,
                 (batch_size,),
+                device=grasp.device,
             ).long()
 
             noise_grasp = noise_scheduler.add_noise(
