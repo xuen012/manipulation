@@ -7,6 +7,7 @@ def initialize(
     test_block_info,
     method="ddim",
     steps=50,
+    guidance_scale=3.0,
     device="auto",
 ):
     # load model architecture
@@ -67,7 +68,7 @@ def initialize(
     loaded_model.eval()
 
     # test parameters
-    guidance_scale = 3.0
+    # guidance_scale is a caller option; the original default remains 3.0.
     noise_scheduler.set_timesteps(
         num_inference_steps=steps
     )
