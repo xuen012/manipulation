@@ -212,6 +212,13 @@ def train(cand_list, config, device="auto"):
             loss_sum += loss.item() * batch_size
             seen += batch_size
 
+            if (
+                config.max_minutes
+                and time.perf_counter() - started
+                >= config.max_minutes * 60
+            ):
+                break
+
         if accelerator.is_main_process:
             pipeline = DDIMPipeline(
                 unet=accelerator.unwrap_model(model),
