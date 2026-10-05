@@ -47,6 +47,13 @@ def initialize(
         time_dim=64,
     )
 
+    if checkpoint["model_kind"] == "hugging":
+        loaded_model = UNet1DModel.from_config(
+            checkpoint["model_config"]
+        )
+
+    loaded_model.grasp_model_kind = checkpoint["model_kind"]
+
     loaded_model.load_state_dict(checkpoint["model"])
     loaded_model.eval()
 
