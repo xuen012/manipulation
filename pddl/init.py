@@ -7,6 +7,7 @@ def initialize(
     test_block_info,
     method="ddim",
     steps=50,
+    device="auto",
 ):
     # load model architecture
     time_embed_dim = 64
@@ -54,6 +55,14 @@ def initialize(
 
     loaded_model.grasp_model_kind = checkpoint["model_kind"]
 
+    if device == "auto":
+        device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
+    else:
+        device = torch.device(device)
+
+    loaded_model = loaded_model.to(device)
     loaded_model.load_state_dict(checkpoint["model"])
     loaded_model.eval()
 
