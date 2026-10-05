@@ -1,4 +1,7 @@
-# load model architecture
+import torch
+from diffusers import DDIMScheduler, DDPMScheduler, UNet1DModel
+from model.unet1d import unet
+
 time_embed_dim = 64
 noise_scheduler = DDIMScheduler(num_train_timesteps=1000, prediction_type="sample")
 loaded_model = unet(grasp_dim=17, cond_dim=10, mid_dim=64, time_dim=64)
