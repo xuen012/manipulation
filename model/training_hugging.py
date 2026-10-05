@@ -50,6 +50,12 @@ def train(cand_list, config, device="auto"):
         shuffle=True,
     )
 
+    validation_loader = DataLoader(
+        validation_data,
+        batch_size=config.train_batch_size,
+        shuffle=False,
+    )
+
 
     lr_scheduler = get_cosine_schedule_with_warmup(
         optimizer=optimizer,
