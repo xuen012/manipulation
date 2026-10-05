@@ -74,7 +74,8 @@ def initialize(
         device=device,
     )
 
-    num_total = 4
+    num_total = checkpoint["sequence_length"]
+
     grasp_dim = 17
     cond_dim = 10
     mid_dim = 64
