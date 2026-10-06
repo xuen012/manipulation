@@ -1,3 +1,6 @@
+import torch
+from model.unet1d import hugging_input
+
 def plan_loop(loaded_model, guidance_scale, noise_scheduler, uncond_block_cnn, test_block_cnn, generated_grasp_cnn):
 
     # reverse to denoise back with noise scheduler under conditional information
