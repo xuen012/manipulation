@@ -1,6 +1,12 @@
 from tampanda.planners.grasp_planner import GraspType
 from tampanda import GraspPlanner
 
+import numpy as np
+import matplotlib.pyplot as plt
+from tampanda import RRTStar
+from pddl.reset import reset_robot
+from pddl.checks import table_height, validate_candidate, detach_object, outcome
+from utils.plotting import render_view, show_views, show_fig
 # reset and get block info to search candidate
 reset_robot(env)
 can_pos  = env.get_object_position("block_a")
