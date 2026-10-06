@@ -28,13 +28,14 @@ def plan_loop(
 
             out_uncond, out_cond = torch.chunk(out, 2, dim=0)
         
-            guided = out_uncond + guidance_scale * (out_cond - out_uncond)
             generated_grasp_cnn = noise_scheduler.step(
                 guided,
                 t,
                 generated_grasp_cnn,
                 generator=generator,
-            ).prev_samplee
+            ).prev_sample
+
+            generated_grasp_cnn[..., 1:] = 0
 
         final_grasp = generated_grasp_cnn
         #print(test_cands[...,0])
