@@ -42,6 +42,21 @@ def plan_loop(
 
     return final_grasp
 
+def check_sample(env, final_grasp):
+    from data.processing import candidate_from_vector
+    from pddl.checks import validate_candidate
+
+    try:
+        candidate = candidate_from_vector(
+            final_grasp[0, :, 0].detach().cpu().numpy()
+        )
+    except ValueError:
+        return False, "geometry", None
+
+    ok, reason = validate_candidate(env, candidate)
+
+    return ok, reason, candidate
+
 # evaluate with ik motion planner to grasp under physical world
 planner = RRTStar(env); planner.max_iterations = 2000; planner.step_size = 0.15
 c = final_grasp[0][:,0][3:]
