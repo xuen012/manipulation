@@ -39,7 +39,6 @@ def plan_loop(
 
         final_grasp = generated_grasp_cnn
         #print(test_cands[...,0])
-        print(final_grasp[0][:,0])
 
     return final_grasp
 
