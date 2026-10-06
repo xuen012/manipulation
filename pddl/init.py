@@ -116,3 +116,34 @@ def initialize(
         generated_grasp_cnn,
         checkpoint,
     )
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--checkpoint",
+        default="checkpoints/grasp/best.pt",
+    )
+
+    parser.add_argument(
+        "--steps",
+        type=int,
+        default=50,
+    )
+
+    args = parser.parse_args()
+
+    loaded = initialize(
+        args.checkpoint,
+        steps=args.steps,
+    )
+
+    print(
+        "Loaded",
+        loaded[-1]["model_kind"],
+        "model with",
+        loaded[-1]["parameter_count"],
+        "parameters",
+    )
