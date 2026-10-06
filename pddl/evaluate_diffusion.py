@@ -1,8 +1,15 @@
 import torch
 from model.unet1d import hugging_input
 
-def plan_loop(loaded_model, guidance_scale, noise_scheduler, uncond_block_cnn, test_block_cnn, generated_grasp_cnn):
-
+def plan_loop(
+    loaded_model,
+    guidance_scale,
+    noise_scheduler,
+    uncond_block_cnn,
+    test_block_cnn,
+    generated_grasp_cnn,
+    generator=None,
+):
     # reverse to denoise back with noise scheduler under conditional information
     with torch.no_grad():
         for t in noise_scheduler.timesteps:
@@ -22,7 +29,12 @@ def plan_loop(loaded_model, guidance_scale, noise_scheduler, uncond_block_cnn, t
             out_uncond, out_cond = torch.chunk(out, 2, dim=0)
         
             guided = out_uncond + guidance_scale * (out_cond - out_uncond)
-            generated_grasp_cnn = noise_scheduler.step(guided, t, generated_grasp_cnn).prev_sample
+            generated_grasp_cnn = noise_scheduler.step(
+                guided,
+                t,
+                generated_grasp_cnn,
+                generator=generator,
+            ).prev_samplee
 
         final_grasp = generated_grasp_cnn
         #print(test_cands[...,0])
