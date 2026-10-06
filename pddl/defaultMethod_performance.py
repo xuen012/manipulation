@@ -14,7 +14,7 @@ can_half = env.get_object_half_size("block_a")
 can_quat = env.get_object_orientation("block_a")
 
 # search grasp candidate
-grasp_planner = GraspPlanner(table_z=0.27)
+grasp_planner = GraspPlanner(table_z=table_height(env))
 candidates = grasp_planner.generate_candidates(can_pos, can_half, can_quat)
 print(candidates)
 candidate = candidates[0]#next(c for c in candidates if c.grasp_type == GraspType.FRONT)
