@@ -9,8 +9,8 @@ def plan_loop(loaded_model, guidance_scale, noise_scheduler, uncond_block_cnn, t
         
             cond = torch.cat([uncond_block_cnn, test_block_cnn], dim=0)
             grasp = torch.cat([generated_grasp_cnn] * 2, dim=0)
-            time = torch.cat([torch.tensor([t])] * 2, dim=0)
-        
+            time = t.reshape(1).expand(grasp.shape[0]).to(grasp.device)
+
             out = loaded_model(grasp, cond, time)
             out_uncond, out_cond = torch.chunk(out, 2, dim=0)
         
