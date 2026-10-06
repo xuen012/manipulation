@@ -11,7 +11,14 @@ def plan_loop(loaded_model, guidance_scale, noise_scheduler, uncond_block_cnn, t
             grasp = torch.cat([generated_grasp_cnn] * 2, dim=0)
             time = t.reshape(1).expand(grasp.shape[0]).to(grasp.device)
 
-            out = loaded_model(grasp, cond, time)
+            if getattr(loaded_model, "grasp_model_kind", "custom") == "hugging":
+                out = loaded_model(
+                    hugging_input(grasp, cond, time),
+                    timestep=time,
+                ).sample
+            else:
+                out = loaded_model(grasp, cond, time)
+
             out_uncond, out_cond = torch.chunk(out, 2, dim=0)
         
             guided = out_uncond + guidance_scale * (out_cond - out_uncond)
