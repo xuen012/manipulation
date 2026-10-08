@@ -1,0 +1,51 @@
+1. Several design problem we met and ideas tried where due to the job distribution some are not included in the limit of slide.
+2. Several Statistics and plotting in testing pipeline that excluded due to the length of the slide.
+
+1. Model and Framework design
+First of all three things are important. Data, Model, and problem.
+
+Problem
+We do not have the same problem definition as in the original paper. Several models we do not need based on the full observated data.
+The partial observation from the original paper coming from its data type. Using image data do not give a determined state so it requires another model.
+- We remove the state determination model for door open or close state. It is not only because the problem scope but the observed data, we assumed to know the state directly.
+- We remove the collosion classifier that we can obtain the feedback directly from the simulator and environment.
+- We remove the latent encoder, due to the different data type, it will complex the problem and we do not have to include and have no more information from a whole picture of image/point cloud in our case. 
+- We focus on the model performance, simulated validation/replan pipeline, and physical testing comparison of all the possible changes.
+
+Data
+In the original paper, they are using trajectory data that having a sequential data for each sample. 
+We do not have or use that in the simplified version. Instead, position value and simple start and goal are given.
+We do not have and consider perception in the project scope.
+- That means less data for training.
+- That means less understanding for the overall geometry in the task environment.
+- What should be used have to be considered when training.
+- A different data structure is considered for diffusion model than the original design.
+- That connects to the dimensions and design of the model.
+
+Model
+A default model was tested. The performance is terrible and the possible reason is that, for this kind of data, a model with a little bit more dimensions causes lots of zero padding space in the dataset to fit the model dimension.
+- The learning turns out to be really hard that most of the information is unusable.
+- Besides the issue from data structure/type, data amount with specific value than a trajectory enormously affects and requires 40 times more data than those usually already makes it start working.
+
+It is the biggest issue in this project, as if we do not have a descent model, nothing further experimenting can run.
+- two things, first, we still do not consider image/perception settings, we might record the trajectory points
+- Besides, at that time, we do not know what actually the issue coming from a wrong model design ( with really small model removing all layers and complex structure in order to train with less data)
+- Or potential issue from the data putting into model.
+- The main consideration for issues on data were mainly focus on wrongly handling the data for input, and not extensive information from the environement or their relationship given to the model to learn.
+- second here, coming from another team member with fresh idea.=> - give more data as basement simply.
+This turns out to be the solution finally in the performance.
+Really simple, surpising no more technical design necessary, and a possible reason is that it acts as a complementary to datas own characterics to be initially less than image data/point cloud with more complex handling on state determination.
+- no more methods complicates the problem were tried that leads us away from the experiments on actual factors affecting diffusion based methods' performance.
+
+Model structure design
+- It is simple that convolution layer is chosen and a novel activation better than relu, elu differentiable in all case, simpler than gelu is tested to integrate. That is just the mind wanting to try exciting things and hope it work then will be cool.
+- most of the layers are remove left only the unet structure as the original paper working on image and trajectory.
+- Attention is used and kept to make model able to pay attention on the most important information, since the first model having issue focusing on the usable information from 0-padding dimensions.
+- Sinuodual timing step required for recording which noise step we want and get back to it.
+- output is grasp candidate with grasp candidate format, that one hot encoding the grasp class, then concatenates all other with its value include the score.
+- input/condition using block condition for grasp task, similar to the operation settings in the rule based planner.
+- It is a really simpler model than the first trial that most blocks, layers, fully connected to first learn it overfitting to prove this data structure, handling and model design are in the correct direction.
+
+Evaluation and Testing
+- really simple evaluation test ran at the beginning to confirm how it performs. A complex test plan for numerous parameter configurations and tasks are ran to confirm a scientic firmed proven observation during experiments from the result.
+(to be done with the test design and more evidence on various tests included)
