@@ -35,7 +35,7 @@ It is the biggest issue in this project, as if we do not have a descent model, n
 - second here, coming from another team member with fresh idea.=> - give more data as basement simply.
 This turns out to be the solution finally in the performance.
 Really simple, surpising no more technical design necessary, and a possible reason is that it acts as a complementary to datas own characterics to be initially less than image data/point cloud with more complex handling on state determination.
-- no more methods complicates the problem were tried that leads us away from the experiments on actual factors affecting diffusion based methods' performance.
+- tends not to complicate the problem, so above methods were not tried that may lead us away from experimenting actual factors affecting diffusion based methods' performance.
 
 Model structure design
 - It is simple that convolution layer is chosen and a novel activation better than relu, elu differentiable in all case, simpler than gelu is tested to integrate. That is just the mind wanting to try exciting things and hope it work then will be cool.
@@ -46,6 +46,10 @@ Model structure design
 - input/condition using block condition for grasp task, similar to the operation settings in the rule based planner.
 - It is a really simpler model than the first trial that most blocks, layers, fully connected to first learn it overfitting to prove this data structure, handling and model design are in the correct direction.
 
-Evaluation and Testing
+Other about models
+- DDIM allows a bigger step noise than smaller step, step by step noising that takes time (DDPM), so from the sampling time it takes longer, but also with steady smaller learning, it shows more stable in physical case than DDIM, with a similar or worse performance in simulated only test.
+- Other chosen of optimizer, learning rate,...etc stays as default in deep learning training.
+
+Evaluation and performance from different phase of Test task
 - really simple evaluation test ran at the beginning to confirm how it performs. A complex test plan for numerous parameter configurations and tasks are ran to confirm a scientic firmed proven observation during experiments from the result.
 (to be done with the test design and more evidence on various tests included)
