@@ -6,6 +6,7 @@ An overview of structure taken from Documentation.md
 /model Train a denoiser.  
 /pddl Initialize, sample, validate, integrate.  
 /utils Setup and Deliver results.  
+
 Documentation.md Introduce detailed structure of github repository.  
 Test parameter.md Introduce detailed parameters used in the experiments.  
 Problem_Learning.md Include problems met and designed version not included in the slide.  
