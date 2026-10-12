@@ -49,6 +49,7 @@ Model structure design
 Other about models
 - DDIM allows a bigger step noise than smaller step, step by step noising that takes time (DDPM), so from the sampling time it takes longer, but also with steady smaller learning, it shows more stable in physical case than DDIM, with a similar or worse performance in simulated only test.
 - Other chosen of optimizer, learning rate,...etc stays as default in deep learning training.
+- Three versions in total for model evolutions, from default huggingface diffuser, simpler model removing potential issue from zero-padding learnt, simple model with improved performance to run tests.
 
 Evaluation and performance from different phase of Test task
 - really simple evaluation test ran at the beginning to confirm how it performs. A complex test plan for numerous parameter configurations and tasks are ran to confirm a scientic firmed proven observation during experiments from the result.
