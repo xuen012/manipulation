@@ -1,7 +1,7 @@
 # Model and reproducible experiment setup
 Setting | Recorded value/implementation
 |---|---:|
-Architecture | Conv1d condition 10 to 64; concatenate noisy grasp + condition + time (145 channels); Conv1d 145 to 64; SiLU; Unet dsign; 2-head attention; Conv1d 64 to 64; SiLU; Conv1d 64 to 17
+Architecture | Conv1d condition 10 to 64; concatenate noisy grasp + condition + time (145 channels); Conv1d 145 to 64; SiLU; Unet design; 2-head attention; Conv1d 64 to 64; SiLU; Conv1d 64 to 17
 Parameter count / representation | 31,953 parameters. Kernel size 1 throughout. Four padded positions, only column 0 active. No multiscale U-Net pyramid.
 Training data | 2,000 scenes, 4,968 teacher labels: 2,000 top-X, 2,000 top-Y, 968 front
 Split and scaling | Seed 42. 1,700 train / 300 validation scenes (4,222 / 746 labels). Fit normalization only on training rows.
