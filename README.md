@@ -1,5 +1,17 @@
 ![framework overview](/overview.png)
 
+An overview of structure taken from Documentation.md
+/data Collect demonstrations and Encode.
+/env Build a basis of simulation environment.
+/model Train a denoiser.
+/pddl Initialize, sample, validate, integrate.
+/utils Setup and Deliver results
+Documentation.md Introduce detailed structure of github repository.
+Test parameter.md Introduce detailed parameters used in the experiments.
+Problem_Learning.md Include problems met and designed version not included in the slide.
+general_framework.png Show an overview of the first version idea applied on pick and place task.
+overview.png Show the final method pipeline.
+
 # manipulation
 
 replace TAMP kinematics engineering pipeline with trained diffusion model, and use PDDL for verification.
