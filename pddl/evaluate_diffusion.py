@@ -1,24 +1,61 @@
-def plan_loop(loaded_model, guidance_scale, noise_scheduler, uncond_block_cnn, test_block_cnn, generated_grasp_cnn):
+import torch
+from model.unet1d import hugging_input
 
+def plan_loop(
+    loaded_model,
+    guidance_scale,
+    noise_scheduler,
+    uncond_block_cnn,
+    test_block_cnn,
+    generated_grasp_cnn,
+    generator=None,
+):
     # reverse to denoise back with noise scheduler under conditional information
     with torch.no_grad():
         for t in noise_scheduler.timesteps:
         
             cond = torch.cat([uncond_block_cnn, test_block_cnn], dim=0)
             grasp = torch.cat([generated_grasp_cnn] * 2, dim=0)
-            time = torch.cat([torch.tensor([t])] * 2, dim=0)
-        
-            out = loaded_model(grasp, cond, time)
+            time = t.reshape(1).expand(grasp.shape[0]).to(grasp.device)
+
+            if getattr(loaded_model, "grasp_model_kind", "custom") == "hugging":
+                out = loaded_model(
+                    hugging_input(grasp, cond, time),
+                    timestep=time,
+                ).sample
+            else:
+                out = loaded_model(grasp, cond, time)
+
             out_uncond, out_cond = torch.chunk(out, 2, dim=0)
         
-            guided = out_uncond + guidance_scale * (out_cond - out_uncond)
-            generated_grasp_cnn = noise_scheduler.step(guided, t, generated_grasp_cnn).prev_sample
+            generated_grasp_cnn = noise_scheduler.step(
+                guided,
+                t,
+                generated_grasp_cnn,
+                generator=generator,
+            ).prev_sample
+
+            generated_grasp_cnn[..., 1:] = 0
 
         final_grasp = generated_grasp_cnn
         #print(test_cands[...,0])
-        print(final_grasp[0][:,0])
 
     return final_grasp
+
+def check_sample(env, final_grasp):
+    from data.processing import candidate_from_vector
+    from pddl.checks import validate_candidate
+
+    try:
+        candidate = candidate_from_vector(
+            final_grasp[0, :, 0].detach().cpu().numpy()
+        )
+    except ValueError:
+        return False, "geometry", None
+
+    ok, reason = validate_candidate(env, candidate)
+
+    return ok, reason, candidate
 
 # evaluate with ik motion planner to grasp under physical world
 planner = RRTStar(env); planner.max_iterations = 2000; planner.step_size = 0.15

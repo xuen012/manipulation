@@ -1,0 +1,68 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Jupyter
+.ipynb_checkpoints
+
+# Project specific
+*.mjb
+manipulation/symbolic/problems/*.pddl
+manipulation/symbolic/viz/*.png
+data/*
+examples/*.png
+manipulation/symbolic/domains/tabletop/pddl/problems/*.pddl
+examples/grasp_captures/*.png
+wandb/examples/generate_data_slurm.sh
+slurm/
+
+CLAUDE.md
+AGENTS.md
